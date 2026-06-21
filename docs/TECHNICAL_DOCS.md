@@ -649,3 +649,181 @@ Siguiente request usa modelo actualizado
 | Backend (FastAPI) | 8000 | HTTP |
 | Frontend (Streamlit) | 8501 | HTTP |
 | MLflow UI (opcional) | 5000 | HTTP |
+
+
+---
+
+## 10. Troubleshooting
+
+### 10.1 Errores Comunes
+
+#### Error: `ModuleNotFoundError: No module named 'src'`
+
+**Causa**: Python no encuentra el paquete raíz del proyecto.
+
+**Solución**:
+- Para pytest: existe `tests/conftest.py` que añade el path automáticamente.
+- Para ejecución directa: ejecutar siempre desde la raíz del proyecto.
+
+```bash
+cd /home/cristian/P7_Proy4_G2-main/P7_Proy4_G2-main
+python -c "from src.ml.pipeline import train_baseline; train_baseline()"
+```
+
+---
+
+#### Error: `FileNotFoundError: data/processed/idealista18_madrid.parquet`
+
+**Causa**: No se ha ejecutado la ingesta antes del entrenamiento.
+
+**Solución**:
+```bash
+python -c "from src.data.ingestion import run_ingestion; run_ingestion()"
+```
+
+---
+
+#### Error: `address already in use` (puerto 8000 o 8501)
+
+**Causa**: Hay otro proceso ocupando el puerto.
+
+**Solución**:
+```bash
+# Identificar y matar el proceso
+kill $(lsof -t -i:8000)
+kill $(lsof -t -i:8501)
+
+# Relanzar
+docker compose up -d
+```
+
+---
+
+#### Error: `AttributeError: 'SimpleImputer' object has no attribute '_fill_dtype'`
+
+**Causa**: Incompatibilidad de versiones de scikit-learn. El modelo fue entrenado con una versión diferente a la del entorno de inferencia.
+
+**Solución**: Asegurar que scikit-learn sea exactamente la misma versión en todos los entornos:
+```
+scikit-learn==1.7.2
+```
+Si el error aparece en Docker, hacer rebuild:
+```bash
+docker compose up --build -d
+```
+
+---
+
+#### Error: `FPDFUnicodeEncodingException` al exportar PDF
+
+**Causa**: Caracteres emoji o Unicode no soportados por la fuente Helvetica de fpdf2.
+
+**Solución**: Ya implementada. La función `_clean_text()` sanitiza emojis antes de escribir en el PDF. Si aparece con texto nuevo, verificar que se llama `_clean_text()` sobre cualquier string que vaya al PDF.
+
+---
+
+#### Error: `remote rejected - refusing to allow a Personal Access Token to create or update workflow`
+
+**Causa**: El token de GitHub no tiene el scope `workflow`.
+
+**Solución**: Regenerar el token en https://github.com/settings/tokens con los permisos `repo` + `workflow` marcados.
+
+---
+
+#### Error: `JSONDecodeError` en el frontend al predecir
+
+**Causa**: La API devuelve una respuesta no-JSON (error 500 interno).
+
+**Solución**:
+1. Revisar logs del backend: `docker compose logs backend --tail=30`
+2. Causas comunes:
+   - Modelo no cargado → verificar que `models/model.pkl` existe
+   - Versión de sklearn incompatible → verificar `requirements.txt`
+   - Error en el cálculo de features → revisar que el payload tiene todos los campos
+
+---
+
+#### Docker: Frontend no conecta con backend
+
+**Causa**: El frontend intenta conectar a `localhost` en vez del nombre del servicio Docker.
+
+**Solución**: Verificar que la variable `API_URL` está configurada en docker-compose.yml:
+```yaml
+frontend:
+  environment:
+    - API_URL=http://backend:8000/api/v1
+```
+
+---
+
+#### Entrenamiento tarda demasiado
+
+**Causa**: Demasiados trials de Optuna o dataset muy grande.
+
+**Solución**:
+- Reducir trials en `src/ml/pipeline.py`:
+  ```python
+  study = optimizar_hiperparametros(X_train, y_train, n_trials=10)  # en vez de 30
+  ```
+- Ejecutar en background:
+  ```bash
+  nohup python3 -c 'from src.ml.pipeline import train_baseline; train_baseline()' > training.log 2>&1 &
+  tail -f training.log
+  ```
+- Tiempo estimado: ~2 min por trial con 94K filas en CPU estándar.
+
+---
+
+### 10.2 Comandos Útiles de Diagnóstico
+
+```bash
+# Ver si los contenedores están corriendo
+docker compose ps
+
+# Logs en tiempo real
+docker compose logs -f
+
+# Logs solo del backend
+docker compose logs backend --tail=50
+
+# Verificar que la API responde
+curl http://localhost:8000/health
+
+# Verificar que el modelo existe dentro del contenedor
+docker compose exec backend ls /app/models/
+
+# Ver procesos Python corriendo
+ps aux | grep python | grep -v grep
+
+# Verificar versiones dentro del contenedor
+docker compose exec backend python -c "import sklearn; print(sklearn.__version__)"
+
+# Reconstruir sin cache
+docker compose build --no-cache
+docker compose up -d
+```
+
+---
+
+### 10.3 Reset Completo
+
+Si todo falla y quieres empezar de cero:
+
+```bash
+# Parar y eliminar contenedores, redes, volúmenes
+docker compose down -v
+
+# Eliminar imágenes del proyecto
+docker rmi $(docker images | grep p7_proy4 | awk '{print $3}')
+
+# Eliminar artefactos locales
+rm -rf models/ mlruns/ data/processed/ mlflow.db training.log
+
+# Re-ingesta + re-entrenamiento
+source venv/bin/activate
+python -c "from src.data.ingestion import run_ingestion; run_ingestion()"
+python -c "from src.ml.pipeline import train_baseline; train_baseline()"
+
+# Rebuild Docker
+docker compose up --build -d
+```
