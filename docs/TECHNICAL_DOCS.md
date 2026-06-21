@@ -261,6 +261,8 @@ Se usa **Optuna** con el sampler **TPE (Tree-structured Parzen Estimator)** para
 | `models/model.pkl` | Pipeline completo (preprocessor + XGBoost) | Inferencia en la API |
 | `models/zona_medians.pkl` | Medianas de precio/m² por geo_zone | Target encoding en inferencia |
 | `models/global_median.pkl` | Mediana global de precio/m² | Fallback para zonas desconocidas |
+| `models/bin_edges.pkl` | Bin edges de lat/lon del entrenamiento | Calcular geo_zone consistente en inferencia |
+| `models/latest_metrics.json` | Métricas del último modelo desplegado | Auto-swap y consulta rápida |
 
 ---
 
@@ -271,7 +273,7 @@ Se usa **Optuna** con el sampler **TPE (Tree-structured Parzen Estimator)** para
 Punto de entrada de la aplicación FastAPI.
 
 ```python
-app = FastAPI(title="Madrid Room Rental Price Predictor")
+app = FastAPI(title="Madrid Housing Price Predictor")
 app.include_router(router, prefix="/api/v1")
 ```
 
@@ -295,7 +297,7 @@ Define los contratos de datos con Pydantic v2:
 
 1. Recibe el payload JSON validado por Pydantic
 2. Carga el modelo serializado (`model.pkl`) y las medianas de zona
-3. Calcula la geo_zone del input usando pd.cut con 20 bins
+3. Calcula la geo_zone del input usando los bin edges guardados del entrenamiento (`bin_edges.pkl`)
 4. Busca el price_per_m2_zone en las medianas precalculadas
 5. Cuenta el n_amenities sumando los campos binarios
 6. Construye un DataFrame con las 26 features en el orden correcto
@@ -437,14 +439,14 @@ services:
       - ./data:/app/data
       - ./models:/app/models
       - ./mlruns:/app/mlruns
-    environment:
-      - MLFLOW_TRACKING_URI=file:///app/mlruns
+    env_file:
+      - .env
 
   frontend:
     build: { context: ., dockerfile: Dockerfile.frontend }
     ports: ["8501:8501"]
-    environment:
-      - API_URL=http://backend:8000/api/v1
+    env_file:
+      - .env
     depends_on: [backend]
 
 networks:
@@ -457,6 +459,7 @@ networks:
 - Volúmenes para data/models/mlruns: persistencia entre rebuilds
 - Red bridge: los contenedores se resuelven por nombre (frontend→backend)
 - `depends_on`: frontend espera a que backend esté creado (no ready, solo created)
+- `env_file`: Variables de entorno externalizadas en `.env` (no se sube a git)
 
 ### 6.2 CI/CD (GitHub Actions)
 
@@ -523,6 +526,13 @@ networks:
 | `test_predict_invalid_payload` | POST /predict con datos incompletos retorna 422 |
 | `test_training_history` | GET /training-history retorna 200 + campo "runs" |
 | `test_upload_non_csv` | POST /upload con .txt retorna 400 |
+| `test_upload_valid_csv` | POST /upload con .csv retorna 200 |
+| `test_predict_empty_body` | POST /predict con body vacío retorna 422 |
+| `test_predict_negative_area` | POST /predict con área negativa retorna 422 |
+| `test_predict_invalid_amenity_value` | POST /predict con amenity fuera de rango retorna 422 |
+| `test_predict_response_format` | Verifica estructura de respuesta (precio > 0, modelo_usado) |
+| `test_retrain_missing_dataset` | POST /retrain con dataset inexistente retorna 404 |
+| `test_health_response_time` | GET /health responde en menos de 1 segundo |
 
 ### 8.3 Estrategia
 
@@ -605,10 +615,10 @@ Upload CSV → data/raw/
 [train_baseline()] Pipeline completo
     │
     ▼
-Nuevos .pkl sobreescriben los anteriores
+[Auto-swap] Compara R² nuevo vs actual
     │
-    ▼
-Siguiente request usa modelo actualizado
+    ├── Si mejora → Reemplaza .pkl y actualiza latest_metrics.json
+    └── Si no mejora → Mantiene modelo anterior (no reemplaza)
 ```
 
 ---

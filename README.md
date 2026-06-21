@@ -77,18 +77,21 @@ Sistema **MLOps End-to-End** para la predicción del precio de viviendas en Madr
 │       └── pipeline.py      # Features, preprocesamiento, Optuna, entrenamiento
 ├── tests/
 │   ├── conftest.py          # Configuración de paths
-│   └── test_api.py          # Tests de la API (5 tests)
+│   └── test_api.py          # Tests de la API (12 tests)
 ├── scripts/
 │   └── data_drift.py        # Detección de drift con Evidently + alertas Slack
 ├── data/
 │   ├── raw/                 # Datos crudos (.csv, .csv.gz)
-│   └── processed/           # Datos procesados (.parquet)
-├── models/                  # Artefactos del modelo (.pkl)
+│   ├── processed/           # Datos procesados (.parquet)
+│   └── geo/                 # Datos geoespaciales (GeoJSON distritos)
+├── models/                  # Artefactos del modelo (.pkl, .json)
 ├── .github/workflows/
 │   └── deploy.yml           # CI/CD pipeline
 ├── docker-compose.yml       # Orquestación multi-contenedor
 ├── Dockerfile.backend       # Imagen del backend
 ├── Dockerfile.frontend      # Imagen del frontend
+├── .env.example             # Variables de entorno (template)
+├── .dockerignore            # Exclusiones para Docker build
 └── requirements.txt         # Dependencias Python
 ```
 
@@ -210,8 +213,9 @@ curl -X POST http://localhost:8000/api/v1/predict \
 3. **Preprocesamiento**: `SimpleImputer(median)` + `StandardScaler` para numéricas, passthrough para binarias
 4. **Optimización**: Optuna (TPE sampler) → 10 trials × 5-Fold CV → minimizar RMSE
 5. **Entrenamiento final**: XGBoost con mejores hiperparámetros
-6. **Tracking**: MLflow registra params, métricas y artefactos
-7. **Serialización**: Pipeline completo → `models/model.pkl`
+6. **Auto-swap**: Solo reemplaza el modelo en producción si el nuevo R² supera al anterior
+7. **Tracking**: MLflow registra params, métricas y artefactos
+8. **Serialización**: Pipeline completo → `models/model.pkl` + `latest_metrics.json`
 
 ### Variables objetivo
 
@@ -235,6 +239,7 @@ El frontend de Streamlit incluye 4 secciones:
 - 📄 Exportar predicciones a PDF
 - 📋 Historial de predicciones por sesión
 - 🗺️ Mapa interactivo con click para seleccionar ubicación
+- 🗺️ Capa GeoJSON con los 21 distritos de Madrid
 
 ---
 
@@ -245,13 +250,20 @@ pytest tests/ -v
 ```
 
 ```
-tests/test_api.py::test_health                  PASSED
-tests/test_api.py::test_predict_valid_payload   PASSED
-tests/test_api.py::test_predict_invalid_payload PASSED
-tests/test_api.py::test_training_history        PASSED
-tests/test_api.py::test_upload_non_csv          PASSED
+tests/test_api.py::test_health                      PASSED
+tests/test_api.py::test_predict_valid_payload        PASSED
+tests/test_api.py::test_predict_invalid_payload      PASSED
+tests/test_api.py::test_training_history             PASSED
+tests/test_api.py::test_upload_non_csv               PASSED
+tests/test_api.py::test_upload_valid_csv             PASSED
+tests/test_api.py::test_predict_empty_body           PASSED
+tests/test_api.py::test_predict_negative_area        PASSED
+tests/test_api.py::test_predict_invalid_amenity_value PASSED
+tests/test_api.py::test_predict_response_format      PASSED
+tests/test_api.py::test_retrain_missing_dataset      PASSED
+tests/test_api.py::test_health_response_time         PASSED
 
-======================== 5 passed ========================
+======================== 12 passed ========================
 ```
 
 ---
@@ -304,6 +316,9 @@ python scripts/data_drift.py
 ## 🐳 Docker
 
 ```bash
+# Configurar variables de entorno
+cp .env.example .env
+
 # Levantar
 docker compose up -d --build
 
