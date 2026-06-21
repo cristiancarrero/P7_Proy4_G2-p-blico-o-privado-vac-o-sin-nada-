@@ -109,6 +109,9 @@ cd P7_Proy4_G2-p-blico-o-privado-vac-o-sin-nada-
 # Colocar dataset en data/raw/
 # (idealista18_madrid_sale.csv.gz)
 
+# Configurar variables de entorno
+cp .env.example .env
+
 # Levantar
 docker compose up -d --build
 ```
