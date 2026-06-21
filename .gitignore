@@ -1,0 +1,39 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+*.egg
+venv/
+.venv/
+
+# Data (no subir datasets grandes al repo)
+data/raw/*.csv
+data/raw/*.csv.gz
+data/raw/*.html
+data/processed/*.parquet
+data/reports/
+
+# Models (binarios pesados)
+models/*.pkl
+models/*.json
+
+# MLflow
+mlruns/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+*:Zone.Identifier
+
+# Docker
+*.log
+
+# Training logs
+training.log
+nohup.out
+mlflow.db
