@@ -13,6 +13,7 @@ router = APIRouter()
 MODEL_PATH = Path("models/model.pkl")
 ZONA_MEDIANS_PATH = Path("models/zona_medians.pkl")
 GLOBAL_MEDIAN_PATH = Path("models/global_median.pkl")
+BIN_EDGES_PATH = Path("models/bin_edges.pkl")
 DATA_RAW_PATH = Path("data/raw")
 
 
@@ -28,15 +29,28 @@ def _load_zone_medians():
     raise HTTPException(status_code=503, detail="Medianas de zona no disponibles.")
 
 
+def _load_bin_edges():
+    if BIN_EDGES_PATH.exists():
+        return joblib.load(BIN_EDGES_PATH)
+    return None
+
+
 @router.post("/predict", response_model=PredictionResponse)
 def predict(req: PredictionRequest):
     pipe = _load_model()
     zone_medians, global_median = _load_zone_medians()
 
-    # Calcular geo_zone del input
-    lat_bins = pd.cut([req.latitude], bins=20, labels=False)[0]
-    lon_bins = pd.cut([req.longitude], bins=20, labels=False)[0]
-    geo_zone = f"{lat_bins}_{lon_bins}"
+    # Calcular geo_zone del input usando bin edges del entrenamiento
+    bin_edges = _load_bin_edges()
+    if bin_edges:
+        lat_bin = int(np.searchsorted(bin_edges["lat_edges"], req.latitude, side="right") - 1)
+        lon_bin = int(np.searchsorted(bin_edges["lon_edges"], req.longitude, side="right") - 1)
+        lat_bin = max(0, min(lat_bin, 19))
+        lon_bin = max(0, min(lon_bin, 19))
+    else:
+        lat_bin = pd.cut([req.latitude], bins=20, labels=False)[0]
+        lon_bin = pd.cut([req.longitude], bins=20, labels=False)[0]
+    geo_zone = f"{lat_bin}_{lon_bin}"
     price_per_m2_zone = zone_medians.get(geo_zone, global_median)
 
     # Contar amenities

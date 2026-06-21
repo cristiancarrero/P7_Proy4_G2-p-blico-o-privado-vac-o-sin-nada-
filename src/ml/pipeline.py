@@ -43,6 +43,10 @@ def _prepare_data():
     df_raw["lon_bin"] = pd.cut(df_raw["LONGITUDE"], bins=20, labels=False)
     df_raw["geo_zone"] = df_raw["lat_bin"].astype(str) + "_" + df_raw["lon_bin"].astype(str)
 
+    # Guardar bin edges para reproducir en inferencia
+    _, lat_edges = pd.cut(df_raw["LATITUDE"], bins=20, labels=False, retbins=True)
+    _, lon_edges = pd.cut(df_raw["LONGITUDE"], bins=20, labels=False, retbins=True)
+
     train_raw, test_raw = train_test_split(df_raw, test_size=0.2, random_state=42)
 
     # Target encoding calculado solo en train
@@ -62,7 +66,7 @@ def _prepare_data():
     X_test = test_df[ALL_FEATURES]
     y_test = np.log1p(test_df["PRICE"])
 
-    return X_train, X_test, y_train, y_test, zone_medians_train, global_median
+    return X_train, X_test, y_train, y_test, zone_medians_train, global_median, lat_edges, lon_edges
 
 
 def _build_preprocessor():
@@ -123,7 +127,7 @@ def train_baseline():
     import mlflow
     import mlflow.xgboost
 
-    X_train, X_test, y_train, y_test, zone_medians, global_median = _prepare_data()
+    X_train, X_test, y_train, y_test, zone_medians, global_median, lat_edges, lon_edges = _prepare_data()
     preprocessor = _build_preprocessor()
 
     print("Optimizando hiperparametros con Optuna (10 trials)...")
@@ -176,6 +180,7 @@ def train_baseline():
     joblib.dump(pipe, "models/model.pkl")
     joblib.dump(zone_medians, "models/zona_medians.pkl")
     joblib.dump(global_median, "models/global_median.pkl")
+    joblib.dump({"lat_edges": lat_edges, "lon_edges": lon_edges}, "models/bin_edges.pkl")
 
     metrics = {
         "timestamp": datetime.now().isoformat(),
