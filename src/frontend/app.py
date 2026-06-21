@@ -219,6 +219,22 @@ with tab1:
 
         # Mapa interactivo - click para mover el marcador
         m = folium.Map(location=[st.session_state.lat, st.session_state.lon], zoom_start=13)
+
+        # Capa de distritos GeoJSON
+        geojson_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "data", "geo", "distritos_madrid.geojson")
+        if os.path.exists(geojson_path):
+            folium.GeoJson(
+                geojson_path,
+                name="Distritos",
+                style_function=lambda x: {
+                    "fillColor": "#4a90d9",
+                    "color": "#1e3a5f",
+                    "weight": 1.5,
+                    "fillOpacity": 0.1,
+                },
+                tooltip=folium.GeoJsonTooltip(fields=["name"], aliases=["Distrito:"]),
+            ).add_to(m)
+
         folium.Marker(
             [st.session_state.lat, st.session_state.lon],
             popup=f"Lat: {st.session_state.lat:.5f}, Lon: {st.session_state.lon:.5f}",

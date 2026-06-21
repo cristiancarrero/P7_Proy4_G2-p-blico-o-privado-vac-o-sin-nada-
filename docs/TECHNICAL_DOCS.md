@@ -666,7 +666,7 @@ Siguiente request usa modelo actualizado
 - Para ejecución directa: ejecutar siempre desde la raíz del proyecto.
 
 ```bash
-cd /home/cristian/P7_Proy4_G2-main/P7_Proy4_G2-main
+cd /ruta/del/proyecto
 python -c "from src.ml.pipeline import train_baseline; train_baseline()"
 ```
 

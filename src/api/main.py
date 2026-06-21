@@ -2,8 +2,8 @@ from fastapi import FastAPI
 from src.api.routes import router
 
 app = FastAPI(
-    title="Madrid Room Rental Price Predictor",
-    description="API de predicción de precios de alquiler de habitaciones en Madrid",
+    title="Madrid Housing Price Predictor",
+    description="API de predicción de precios de vivienda en Madrid",
     version="1.0.0",
 )
 

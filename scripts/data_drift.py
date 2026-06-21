@@ -9,11 +9,11 @@ from pathlib import Path
 from evidently.report import Report
 from evidently.metric_preset import DataDriftPreset
 
-BASELINE_PATH = Path("data/processed/habitaciones_madrid.parquet")
+BASELINE_PATH = Path("data/processed/idealista18_madrid.parquet")
 PRODUCTION_PATH = Path("data/raw/production_data.csv")
 REPORT_PATH = Path("data/reports")
 
-NUMERICAL_FEATURES = ["m2_totales", "habitaciones_totales", "banos_totales", "precio"]
+NUMERICAL_FEATURES = ["CONSTRUCTEDAREA", "ROOMNUMBER", "BATHNUMBER", "PRICE"]
 
 
 def run_drift_analysis():

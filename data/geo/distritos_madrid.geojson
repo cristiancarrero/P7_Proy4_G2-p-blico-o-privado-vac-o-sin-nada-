@@ -1,0 +1,110 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {"name": "Centro", "code": "01"},
+      "geometry": {"type": "Polygon", "coordinates": [[[-3.714, 40.410], [-3.700, 40.410], [-3.695, 40.420], [-3.700, 40.425], [-3.714, 40.425], [-3.714, 40.410]]]}
+    },
+    {
+      "type": "Feature",
+      "properties": {"name": "Arganzuela", "code": "02"},
+      "geometry": {"type": "Polygon", "coordinates": [[[-3.715, 40.390], [-3.690, 40.390], [-3.690, 40.410], [-3.715, 40.410], [-3.715, 40.390]]]}
+    },
+    {
+      "type": "Feature",
+      "properties": {"name": "Retiro", "code": "03"},
+      "geometry": {"type": "Polygon", "coordinates": [[[-3.695, 40.400], [-3.670, 40.400], [-3.670, 40.420], [-3.695, 40.420], [-3.695, 40.400]]]}
+    },
+    {
+      "type": "Feature",
+      "properties": {"name": "Salamanca", "code": "04"},
+      "geometry": {"type": "Polygon", "coordinates": [[[-3.695, 40.420], [-3.670, 40.420], [-3.670, 40.440], [-3.695, 40.440], [-3.695, 40.420]]]}
+    },
+    {
+      "type": "Feature",
+      "properties": {"name": "Chamartín", "code": "05"},
+      "geometry": {"type": "Polygon", "coordinates": [[[-3.695, 40.440], [-3.665, 40.440], [-3.665, 40.470], [-3.695, 40.470], [-3.695, 40.440]]]}
+    },
+    {
+      "type": "Feature",
+      "properties": {"name": "Tetuán", "code": "06"},
+      "geometry": {"type": "Polygon", "coordinates": [[[-3.715, 40.440], [-3.695, 40.440], [-3.695, 40.470], [-3.715, 40.470], [-3.715, 40.440]]]}
+    },
+    {
+      "type": "Feature",
+      "properties": {"name": "Chamberí", "code": "07"},
+      "geometry": {"type": "Polygon", "coordinates": [[[-3.715, 40.425], [-3.695, 40.425], [-3.695, 40.440], [-3.715, 40.440], [-3.715, 40.425]]]}
+    },
+    {
+      "type": "Feature",
+      "properties": {"name": "Fuencarral-El Pardo", "code": "08"},
+      "geometry": {"type": "Polygon", "coordinates": [[[-3.750, 40.470], [-3.680, 40.470], [-3.680, 40.530], [-3.750, 40.530], [-3.750, 40.470]]]}
+    },
+    {
+      "type": "Feature",
+      "properties": {"name": "Moncloa-Aravaca", "code": "09"},
+      "geometry": {"type": "Polygon", "coordinates": [[[-3.770, 40.425], [-3.715, 40.425], [-3.715, 40.470], [-3.770, 40.470], [-3.770, 40.425]]]}
+    },
+    {
+      "type": "Feature",
+      "properties": {"name": "Latina", "code": "10"},
+      "geometry": {"type": "Polygon", "coordinates": [[[-3.770, 40.380], [-3.715, 40.380], [-3.715, 40.410], [-3.770, 40.410], [-3.770, 40.380]]]}
+    },
+    {
+      "type": "Feature",
+      "properties": {"name": "Carabanchel", "code": "11"},
+      "geometry": {"type": "Polygon", "coordinates": [[[-3.760, 40.355], [-3.715, 40.355], [-3.715, 40.380], [-3.760, 40.380], [-3.760, 40.355]]]}
+    },
+    {
+      "type": "Feature",
+      "properties": {"name": "Usera", "code": "12"},
+      "geometry": {"type": "Polygon", "coordinates": [[[-3.715, 40.370], [-3.690, 40.370], [-3.690, 40.390], [-3.715, 40.390], [-3.715, 40.370]]]}
+    },
+    {
+      "type": "Feature",
+      "properties": {"name": "Puente de Vallecas", "code": "13"},
+      "geometry": {"type": "Polygon", "coordinates": [[[-3.680, 40.375], [-3.640, 40.375], [-3.640, 40.400], [-3.680, 40.400], [-3.680, 40.375]]]}
+    },
+    {
+      "type": "Feature",
+      "properties": {"name": "Moratalaz", "code": "14"},
+      "geometry": {"type": "Polygon", "coordinates": [[[-3.660, 40.400], [-3.630, 40.400], [-3.630, 40.420], [-3.660, 40.420], [-3.660, 40.400]]]}
+    },
+    {
+      "type": "Feature",
+      "properties": {"name": "Ciudad Lineal", "code": "15"},
+      "geometry": {"type": "Polygon", "coordinates": [[[-3.665, 40.430], [-3.635, 40.430], [-3.635, 40.460], [-3.665, 40.460], [-3.665, 40.430]]]}
+    },
+    {
+      "type": "Feature",
+      "properties": {"name": "Hortaleza", "code": "16"},
+      "geometry": {"type": "Polygon", "coordinates": [[[-3.665, 40.460], [-3.620, 40.460], [-3.620, 40.500], [-3.665, 40.500], [-3.665, 40.460]]]}
+    },
+    {
+      "type": "Feature",
+      "properties": {"name": "Villaverde", "code": "17"},
+      "geometry": {"type": "Polygon", "coordinates": [[[-3.730, 40.335], [-3.680, 40.335], [-3.680, 40.370], [-3.730, 40.370], [-3.730, 40.335]]]}
+    },
+    {
+      "type": "Feature",
+      "properties": {"name": "Villa de Vallecas", "code": "18"},
+      "geometry": {"type": "Polygon", "coordinates": [[[-3.640, 40.355], [-3.590, 40.355], [-3.590, 40.385], [-3.640, 40.385], [-3.640, 40.355]]]}
+    },
+    {
+      "type": "Feature",
+      "properties": {"name": "Vicálvaro", "code": "19"},
+      "geometry": {"type": "Polygon", "coordinates": [[[-3.610, 40.400], [-3.570, 40.400], [-3.570, 40.430], [-3.610, 40.430], [-3.610, 40.400]]]}
+    },
+    {
+      "type": "Feature",
+      "properties": {"name": "San Blas-Canillejas", "code": "20"},
+      "geometry": {"type": "Polygon", "coordinates": [[[-3.620, 40.430], [-3.580, 40.430], [-3.580, 40.460], [-3.620, 40.460], [-3.620, 40.430]]]}
+    },
+    {
+      "type": "Feature",
+      "properties": {"name": "Barajas", "code": "21"},
+      "geometry": {"type": "Polygon", "coordinates": [[[-3.600, 40.460], [-3.550, 40.460], [-3.550, 40.500], [-3.600, 40.500], [-3.600, 40.460]]]}
+    }
+  ]
+}

@@ -155,14 +155,28 @@ def train_baseline():
         mlflow.xgboost.log_model(pipe.named_steps["model"], "xgboost_model")
         print("Run registrado en MLflow")
 
+    # Auto-swap: solo reemplazar si el nuevo modelo es mejor
+    import json
+    from datetime import datetime
+
     os.makedirs("models", exist_ok=True)
+    metrics_path = "models/latest_metrics.json"
+    prev_r2 = None
+    if os.path.exists(metrics_path):
+        with open(metrics_path) as f:
+            prev_r2 = json.load(f).get("test_r2")
+
+    if prev_r2 is not None and test_r2 <= prev_r2:
+        print(f"⚠️ Nuevo modelo (R²={test_r2:.4f}) NO supera al actual (R²={prev_r2:.4f}). Modelo NO reemplazado.")
+        return pipe, cv_r2_scores, test_r2
+
+    if prev_r2 is not None:
+        print(f"✅ Nuevo modelo (R²={test_r2:.4f}) supera al actual (R²={prev_r2:.4f}). Reemplazando...")
+
     joblib.dump(pipe, "models/model.pkl")
     joblib.dump(zone_medians, "models/zona_medians.pkl")
     joblib.dump(global_median, "models/global_median.pkl")
 
-    # Guardar métricas finales en JSON
-    import json
-    from datetime import datetime
     metrics = {
         "timestamp": datetime.now().isoformat(),
         "model": "xgboost-optuna-idealista18",
@@ -173,7 +187,7 @@ def train_baseline():
         "n_filas": len(X_train) + len(X_test),
         "best_params": best_params,
     }
-    with open("models/latest_metrics.json", "w") as f:
+    with open(metrics_path, "w") as f:
         json.dump(metrics, f, indent=2)
     print("Modelo guardado en models/model.pkl")
     print("Métricas guardadas en models/latest_metrics.json")
