@@ -159,7 +159,24 @@ def train_baseline():
     joblib.dump(pipe, "models/model.pkl")
     joblib.dump(zone_medians, "models/zona_medians.pkl")
     joblib.dump(global_median, "models/global_median.pkl")
+
+    # Guardar métricas finales en JSON
+    import json
+    from datetime import datetime
+    metrics = {
+        "timestamp": datetime.now().isoformat(),
+        "model": "xgboost-optuna-idealista18",
+        "cv_r2_mean": round(float(cv_r2_scores.mean()), 4),
+        "cv_r2_std": round(float(cv_r2_scores.std()), 4),
+        "test_r2": round(float(test_r2), 4),
+        "test_rmse_eur": round(float(test_rmse), 2),
+        "n_filas": len(X_train) + len(X_test),
+        "best_params": best_params,
+    }
+    with open("models/latest_metrics.json", "w") as f:
+        json.dump(metrics, f, indent=2)
     print("Modelo guardado en models/model.pkl")
+    print("Métricas guardadas en models/latest_metrics.json")
 
     return pipe, cv_r2_scores, test_r2
 

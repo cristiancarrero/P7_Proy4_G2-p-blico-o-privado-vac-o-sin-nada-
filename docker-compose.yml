@@ -9,8 +9,8 @@ services:
       - ./data:/app/data
       - ./models:/app/models
       - ./mlruns:/app/mlruns
-    environment:
-      - MLFLOW_TRACKING_URI=file:///app/mlruns
+    env_file:
+      - .env
     networks:
       - app-network
 
@@ -20,8 +20,8 @@ services:
       dockerfile: Dockerfile.frontend
     ports:
       - "8501:8501"
-    environment:
-      - API_URL=http://backend:8000/api/v1
+    env_file:
+      - .env
     depends_on:
       - backend
     networks:
